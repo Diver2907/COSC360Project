@@ -1,0 +1,53 @@
+a{
+    display:flex;
+    padding:20px;
+    font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+    color:#000;
+}
+
+.top-nav{
+    background-color: #800080;
+    padding: 20px;
+    /* Fonts */
+    font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+    color: #ffffff;
+
+    /* Alignment in the div */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 100px;
+    grid-area: top;
+}
+
+.right-nav{
+    position:fixed;
+    top:0;
+    right:30px;
+    width:200px;
+    height:100%;
+    background-color:#c0c0c0;
+    
+    box-sizing:border-box;
+    padding-top:100px;
+    grid-area: right;
+}
+
+.content{
+    position:relative;
+    display:block;
+    margin-bottom: 20px;
+    clear:both;
+    grid-area: main;
+    padding-right:50px;
+    padding-left:20px;
+}
+.page{
+    display:grid;
+    grid-template-areas: 
+        "top top"
+        "main right";
+    grid-template-columns: 1fr 200px;
+    grid-template-rows: 60px 1fr;
+    height: 100vh;
+}
