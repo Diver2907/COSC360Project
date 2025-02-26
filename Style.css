@@ -4,7 +4,7 @@ a{
     font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
     color:#000;
 }
-
+/*CSS to format the nav bars and the main content to ensure no overlapping occurs with the main content and the nav bars*/
 .top-nav{
     background-color: #800080;
     padding: 20px;
@@ -33,6 +33,7 @@ a{
     grid-area: right;
 }
 
+/* This hold the main content of the page */
 .content{
     position:relative;
     display:block;
