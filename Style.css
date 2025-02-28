@@ -1,54 +1,71 @@
-a{
-    display:flex;
-    padding:20px;
-    font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-    color:#000;
+*{
+    margin:0;
+    padding:0;
+    box-sizing: border-box;
 }
+
 /*CSS to format the nav bars and the main content to ensure no overlapping occurs with the main content and the nav bars*/
-.top-nav{
+/* Top horizontal bar */
+.top-bar {
+    position: fixed;
+    top: 10px;
+    left: 0;
+    width: 100%;
+    height: 60px;           /* set desired height */
     background-color: #800080;
-    padding: 20px;
-    /* Fonts */
-    font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-    color: #ffffff;
-
-    /* Alignment in the div */
+    color: #fff;
     display: flex;
-    flex-direction: row;
     align-items: center;
-    gap: 100px;
-    grid-area: top;
-}
-
-.right-nav{
-    position:fixed;
-    top:0;
-    right:30px;
-    width:200px;
-    height:100%;
-    background-color:#c0c0c0;
-    
-    box-sizing:border-box;
+    padding: 0 20px;
+    z-index: 1;
+  }
+  
+  /* Right fixed navigation bar */
+  .right-nav {
+    position: fixed;
+    top: 0;                 /* can start at 0 so it overlaps the top bar */
+    right: 10px;
+    width: 200px;           /* fixed width */
+    height: 100%;           /* full height */
+    background-color: #555;
+    color: #fff;
+    padding: 20px;
+    z-index: 2;             /* higher than the top bar so it sits on top */
     padding-top:100px;
-    grid-area: right;
+    text-align: center;
+  }
+  
+  /* Main content section */
+  .main-content {
+    /* Give room for the top bar and right nav */
+    margin-top: 60px;       /* same as top-bar's height */
+    margin-right: 200px;    /* same as right-nav's width */
+    padding: 20px;
+    background-color: #f9f9f9;
+    min-height: calc(100vh - 60px);  /* fill remaining vertical space */
+  }
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+}
+li{
+    margin:5px;
+    background-color: #999;
+    padding:5px;
+    text-decoration: none;
 }
 
-/* This hold the main content of the page */
-.content{
-    position:relative;
-    display:block;
-    margin-bottom: 20px;
-    clear:both;
-    grid-area: main;
-    padding-right:50px;
-    padding-left:20px;
+li.active {
+    background-color: #800080;  /* Change this to your desired highlight color */
 }
-.page{
-    display:grid;
-    grid-template-areas: 
-        "top top"
-        "main right";
-    grid-template-columns: 1fr 200px;
-    grid-template-rows: 60px 1fr;
-    height: 100vh;
+
+a:link, a:visited, a:hover, a:active {
+    color: #ffffff; /* Replace with your desired color */
+    text-decoration: none; /* Optional: Remove underlines */
+}
+
+p{
+    text-wrap: break-space;
 }
