@@ -164,3 +164,13 @@ body {
 .theme-pink .right-nav {
     background-color: #D87093;
 }
+
+
+.post img {
+    cursor: pointer;
+    transition: transform 0.3s;
+    max-width: 100%;
+  }
+  .post img:hover {
+    transform: scale(1.05);
+  }
