@@ -1,29 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <link rel="stylesheet" href="Style.css"/>
-        <title>Home</title>
-    </head>
-    <body>
-        <div class="top-bar">
-            <h1>BlogSphere</h1>
-            <a href="post.html">Post</a>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Author Profile</title>
+    <link rel="stylesheet" href="Style.css">
+</head>
+<body>
+    <div class="top-bar">
+        <h1>BlogSphere</h1>
+        <a href="post.html">Post</a>
+    </div>
+    <h1>Welcome to BlogSphere!</h1>
+    <div class="right-nav">
+        <ul>
+            <li><a href="home.html">Home</a></li>
+            <li class="active"><a href="profile.html">Profile</a></li>
+            <li><a href="friends.html">Friends</a></li>
+            <li><a href="settings.html">Settings</a></li>
+            <li><a href="ts-cs.html">Terms and Conditions</a></li>
+            <li><a href="index.html">Logout</a></li>
+        </ul>
+    </div>
+    <div class="profile-container">
+        <h2>Profile</h2>
+        <img id="profile-pic" src="" alt="Profile Picture" class="profile-pic">
+        <h2 id="author-name">Author Name</h2>
+        <p class="bio" id="author-bio">This is the author's bio.</p>
+        <p class="friend-count" onclick="redirectToFriends()">Friends: <span id="friend-count">0</span></p>
+        <div class="posts" id="posts-container">
+            <h3>Posts</h3>
+            <div class="post">Sample post 1</div>
+            <div class="post">Sample post 2</div>
         </div>
-        <div class="right-nav">
-            <ul>
-                <li><a href="home.html">Home</a></li>
-                <li class="active"><a href="profile.html">Profile</a></li>
-                <li><a href="friends.html">Friends</a></li>
-                <li><a href="settings.html">Settings</a></li>
-                <li><a href="ts-cs.html">Terms and Conditions</a></li>
-                <li><a href="index.html">Logout</a></li>
-            </ul>
-        </div>
-        <div class="main-content">
-            <h2>Profile</h2>
-            <p>
-              This is the profile page
-            </p>
-          </div>
-    </body>
+    </div>
+    <script>
+        function redirectToFriends() {
+            window.location.href = "friends.html";
+        }
+
+        // Load user data from localStorage
+        function loadProfile() {
+            let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser) {
+                document.getElementById('author-name').innerText = currentUser.name;
+                document.getElementById('author-bio').innerText = currentUser.bio;
+                if (currentUser.profileImage) {
+                    document.getElementById('profile-pic').src = currentUser.profileImage;
+                } else {
+                    document.getElementById('profile-pic').src = "default-profile.png";
+                }
+            } else {
+                alert("No user data found. Please log in.");
+                window.location.href = "index.html";
+            }
+        }
+        
+        window.onload = loadProfile;
+    </script>
+</body>
 </html>
