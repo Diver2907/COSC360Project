@@ -23,59 +23,23 @@
             <div class="main-content">
                 <h1>Posts Feed</h1>
                 <!-- Container where posts will be displayed -->
-                <div id="posts-container"></div>
+                <div class="posts" id="posts-container">
+                  <h3>Posts</h3>
+                  <div class="post">
+                      <img id="post-pic" src="samplePost1.png" alt="Post Image" class="post-pic" height="300">
+                      <div class="post-content">
+                          <p>Very lucky to take part in this event!</p>
+                      </div>
+                  </div>
+                  <div class="post">
+                      <img id="post-pic" src="samplePost2.JPG" alt="Post Image" class="post-pic" height="300">
+                      <div class="post-content">
+                          <p>Heavier than air planes!</p>
+                      </div>
+                  </div>
               </div>
+             
             
-              <script>
-                // Function to load posts from localStorage and display them
-                function loadPosts() {
-                  // Retrieve posts from localStorage
-                  const postsJSON = localStorage.getItem('posts');
-                  console.log("Retrieved posts JSON:", postsJSON); // Debug logging
-            
-                  const posts = postsJSON ? JSON.parse(postsJSON) : [];
-                  console.log("Parsed posts array:", posts); // Debug logging
-            
-                  const postsContainer = document.getElementById('posts-container');
-                  postsContainer.innerHTML = ''; // Clear any existing posts
-            
-                  if (posts.length === 0) {
-                    postsContainer.innerHTML = '<p>No posts available yet. Create one on the post page!</p>';
-                  } else {
-                    posts.forEach(post => {
-                      // Create a post container
-                      const postDiv = document.createElement('div');
-                      postDiv.className = 'post';
-                      
-                      // If the post has an image, create and append an image element
-                      if (post.image && post.image.trim() !== '') {
-                        const img = document.createElement('img');
-                        img.src = post.image;
-                        img.alt = 'Post Image';
-                        postDiv.appendChild(img);
-                      }
-                      
-                      // Create a paragraph for the post text
-                      if (post.text) {
-                        const p = document.createElement('p');
-                        p.textContent = post.text;
-                        postDiv.appendChild(p);
-                      }
-                      
-                      postsContainer.appendChild(postDiv);
-                    });
-                  }
-                }
-                
-                // Initial load when the home page is opened
-                loadPosts();
-            
-                // Listen for storage events to update posts when changes occur in another tab
-                window.addEventListener('storage', function(e) {
-                  if (e.key === 'posts') {
-                    loadPosts();
-                  }
-                });
-              </script>
+      
           </body>
 </html>
