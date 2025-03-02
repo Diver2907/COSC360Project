@@ -7,23 +7,75 @@
     <body>
         <div class="top-bar">
             <h1>BlogSphere</h1>
-            <a href="post.html">Post</a>
+            
         </div>
         <div class="right-nav">
             <ul>
                 <li class="active"><a href="home.html">Home</a></li>
                 <li><a href="profile.html">Profile</a></li>
                 <li><a href="friends.html">Friends</a></li>
+                <li><a href="post.html">Post</a></li>
                 <li><a href="settings.html">Settings</a></li>
                 <li><a href="ts-cs.html">Terms and Conditions</a></li>
                 <li><a href="index.html">Logout</a></li>
             </ul>
         </div>
-        <div class="main-content">
-            <h2>Home</h2>
-            <p>
-              This is the home page
-            </p>
-          </div>
-    </body>
+            <div class="main-content">
+                <h1>Posts Feed</h1>
+                <!-- Container where posts will be displayed -->
+                <div id="posts-container"></div>
+              </div>
+            
+              <script>
+                // Function to load posts from localStorage and display them
+                function loadPosts() {
+                  // Retrieve posts from localStorage
+                  const postsJSON = localStorage.getItem('posts');
+                  console.log("Retrieved posts JSON:", postsJSON); // Debug logging
+            
+                  const posts = postsJSON ? JSON.parse(postsJSON) : [];
+                  console.log("Parsed posts array:", posts); // Debug logging
+            
+                  const postsContainer = document.getElementById('posts-container');
+                  postsContainer.innerHTML = ''; // Clear any existing posts
+            
+                  if (posts.length === 0) {
+                    postsContainer.innerHTML = '<p>No posts available yet. Create one on the post page!</p>';
+                  } else {
+                    posts.forEach(post => {
+                      // Create a post container
+                      const postDiv = document.createElement('div');
+                      postDiv.className = 'post';
+                      
+                      // If the post has an image, create and append an image element
+                      if (post.image && post.image.trim() !== '') {
+                        const img = document.createElement('img');
+                        img.src = post.image;
+                        img.alt = 'Post Image';
+                        postDiv.appendChild(img);
+                      }
+                      
+                      // Create a paragraph for the post text
+                      if (post.text) {
+                        const p = document.createElement('p');
+                        p.textContent = post.text;
+                        postDiv.appendChild(p);
+                      }
+                      
+                      postsContainer.appendChild(postDiv);
+                    });
+                  }
+                }
+                
+                // Initial load when the home page is opened
+                loadPosts();
+            
+                // Listen for storage events to update posts when changes occur in another tab
+                window.addEventListener('storage', function(e) {
+                  if (e.key === 'posts') {
+                    loadPosts();
+                  }
+                });
+              </script>
+          </body>
 </html>

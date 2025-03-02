@@ -61,11 +61,47 @@ li.active {
     background-color: #800080;  /* Change this to your desired highlight color */
 }
 
-a:link, a:visited, a:hover, a:active {
+a:link, a:visited, a:active {
     color: #ffffff; /* Replace with your desired color */
     text-decoration: none; /* Optional: Remove underlines */
+    box-sizing: border-box;
+}
+
+li:hover{
+    background-color:rgb(0, 94, 94);
 }
 
 p{
     text-wrap: break-space;
+}
+
+.post{
+    background-color: #DDD;
+    padding:5px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    display:inline-block;
+}
+
+.post-container{
+    background-color: #DDD;
+    padding:5px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+}
+
+.right-nav a{
+    display:block;
+}
+
+.profile{
+    background-color: #DDD;
+    padding:5px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    display:inline-block;
+}
+.profile-pic{
+    background-color: #800080;
+    padding:5px;
 }
