@@ -1,29 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <link rel="stylesheet" href="Style.css"/>
-        <title>Home</title>
-    </head>
-    <body>
-        <div class="top-bar">
-            <h1>BlogSphere</h1>
-            
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <link rel="stylesheet" href="Style.css">
+    <style>
+        /* Dark Theme */
+        .theme-dark .main-content {
+            background-color: #222;
+            color: white;
+        }
+        .theme-dark .top-bar {
+            background-color: #111;
+        }
+        .theme-dark .right-nav {
+            background-color: #333;
+        }
+
+        /* Blue Theme */
+        .theme-blue .main-content {
+            background-color: #ADD8E6;
+            color: black;
+        }
+        .theme-blue .top-bar {
+            background-color: #1E3A5F;
+        }
+        .theme-blue .right-nav {
+            background-color: #5A9BD3;
+        }
+
+        /* Pink Theme */
+        .theme-pink .main-content {
+            background-color: #FFC0CB;
+            color: black;
+        }
+        .theme-pink .top-bar {
+            background-color: #B03060;
+        }
+        .theme-pink .right-nav {
+            background-color: #D87093;
+        }
+
+        /* Theme Selection Band - Ensures Visibility */
+        .theme-selection {
+            background: #f4f4f4;
+            padding: 20px;
+            border-top: 2px solid #ccc;
+            width: 100%;
+            text-align: center;
+            font-size: 1.2em;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .theme-selection h3 {
+            margin-bottom: 10px;
+        }
+        .theme-option {
+            cursor: pointer;
+            margin: 5px;
+            padding: 10px 15px;
+            background: #ddd;
+            border-radius: 5px;
+            display: inline-block;
+            font-weight: bold;
+            transition: background 0.3s, color 0.3s;
+        }
+        .theme-option:hover {
+            background: #bbb;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <h1>BlogSphere</h1>
+    </div>
+    <div class="right-nav">
+        <ul>
+            <li><a href="home.html">Home</a></li>
+            <li><a href="profile.html">Profile</a></li>
+            <li><a href="friends.html">Friends</a></li>
+            <li class="active"><a href="settings.html">Settings</a></li>
+            <li><a href="ts-cs.html">Terms and Conditions</a></li>
+            <li><a href="index.html">Logout</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <h2>Settings</h2>
+        <p>This is the settings page</p>
+        <div class="theme-selection">
+            <h3>Select Theme</h3>
+            <span class="theme-option" onclick="setTheme('dark')">Dark</span>
+            <span class="theme-option" onclick="setTheme('blue')">Blue</span>
+            <span class="theme-option" onclick="setTheme('pink')">Pink</span>
         </div>
-        <div class="right-nav">
-            <ul>
-                <li><a href="home.html">Home</a></li>
-                <li><a href="profile.html">Profile</a></li>
-                <li><a href="friends.html">Friends</a></li>
-                <li class="active"><a href="settings.html">Settings</a></li>
-                <li><a href="ts-cs.html">Terms and Conditions</a></li>
-                <li><a href="index.html">Logout</a></li>
-            </ul>
-        </div>
-        <div class="main-content">
-            <h2>Settings</h2>
-            <p>
-              This is the settings page
-            </p>
-          </div>
-    </body>
+    </div>
+    <script>
+        function setTheme(theme) {
+            localStorage.setItem('theme', theme);
+            applyThemeToAllPages();
+        }
+
+        function applyThemeToAllPages() {
+            let savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.className = `theme-${savedTheme}`;
+            }
+        }
+        
+        window.onload = applyThemeToAllPages;
+    </script>
+</body>
 </html>

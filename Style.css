@@ -124,3 +124,43 @@ p{
     padding: 20px;
     background-color: #f4f4f4;
 }
+/* Default Styles */
+body {
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Dark Theme */
+.theme-dark {
+    background-color: #222;
+    color: white;
+}
+.theme-dark .top-bar {
+    background-color: #111;
+}
+.theme-dark .right-nav {
+    background-color: #333;
+}
+
+/* Blue Theme */
+.theme-blue {
+    background-color: #ADD8E6;
+    color: black;
+}
+.theme-blue .top-bar {
+    background-color: #1E3A5F;
+}
+.theme-blue .right-nav {
+    background-color: #5A9BD3;
+}
+
+/* Pink Theme */
+.theme-pink {
+    background-color: #FFC0CB;
+    color: black;
+}
+.theme-pink .top-bar {
+    background-color: #B03060;
+}
+.theme-pink .right-nav {
+    background-color: #D87093;
+}
