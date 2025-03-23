@@ -1,46 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <link rel="stylesheet" href="Style.css"/>\
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link rel="stylesheet" href="Style.css"/>
+</head>
+<body>
+    <div class="top-bar">
+        <h1>BlogSphere</h1>
+    </div>
+    <div class="right-nav">
+        <ul>
+            <li class="active"><a href="home.html">Home</a></li>
+            <li><a href="profile.html">Profile</a></li>
+            <li><a href="friends.html">Friends</a></li>
+            <li><a href="post.html">Post</a></li>
+            <li><a href="settings.html">Settings</a></li>
+            <li><a href="ts-cs.html">Terms and Conditions</a></li>
+            <li><a href="index.html" onclick="logout()">Logout</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <h1>Posts Feed</h1>
+        <input type="text" id="search-input" placeholder="Search posts..." oninput="filterPosts()" style="width: 100%; padding: 10px; margin: 20px 0;">
+        <div class="posts" id="posts-container">
+            <!-- Dynamic posts will be loaded here -->
+        </div>
+    </div>
+    <script>
+        if (!localStorage.getItem('user_id')) {
+            window.location.href = 'index.html';
+        }
 
-        <title>Home</title>
-    </head>
-    <body>
-        <div class="top-bar">
-            <h1>BlogSphere</h1>
-            
-        </div>
-        <div class="right-nav">
-            <ul>
-                <li class="active"><a href="home.html">Home</a></li>
-                <li><a href="profile.html">Profile</a></li>
-                <li><a href="friends.html">Friends</a></li>
-                <li><a href="post.html">Post</a></li>
-                <li><a href="settings.html">Settings</a></li>
-                <li><a href="ts-cs.html">Terms and Conditions</a></li>
-                <li><a href="index.html">Logout</a></li>
-            </ul>
-        </div>
-            <div class="main-content">
-                <h1>Posts Feed</h1>
-                <!-- Container where posts will be displayed -->
-                <div class="posts" id="posts-container">
-                  <h3>Posts</h3>
-                  <div class="post">
-                      <img id="post-pic" src="samplePost1.png" alt="Post Image" class="post-pic" height="300">
-                      <div class="post-content">
-                          <p>Very lucky to take part in this event!</p>
-                      </div>
-                  </div>
-                  <div class="post">
-                      <img id="post-pic" src="samplePost2.JPG" alt="Post Image" class="post-pic" height="300">
-                      <div class="post-content">
-                          <p>Heavier than air planes!</p>
-                      </div>
-                  </div>
-              </div>
-             
-            
-      
-          </body>
+        function logout() {
+            localStorage.clear();
+        }
+
+        let allPosts = [];
+
+        function loadPosts() {
+            fetch('get_posts.php')
+                .then(res => res.json())
+                .then(posts => {
+                    allPosts = posts;
+                    displayPosts(posts);
+                })
+                .catch(err => {
+                    console.error('Error loading posts:', err);
+                });
+        }
+
+        function displayPosts(posts) {
+            const container = document.getElementById('posts-container');
+            container.innerHTML = '';
+            if (posts.length === 0) {
+                container.innerHTML = '<p>No posts available.</p>';
+                return;
+            }
+
+            posts.forEach(post => {
+                const postDiv = document.createElement('div');
+                postDiv.className = 'post';
+
+                if (post.image_url) {
+                    const img = document.createElement('img');
+                    img.src = post.image_url;
+                    img.alt = 'Post Image';
+                    postDiv.appendChild(img);
+                }
+
+                const userInfo = document.createElement('p');
+                userInfo.innerHTML = `<strong>@${post.username}</strong>`;
+                const content = document.createElement('p');
+                content.textContent = post.content;
+
+                // Comments section
+                const commentSection = document.createElement('div');
+                commentSection.className = 'comments';
+                const commentList = document.createElement('div');
+                commentList.className = 'comment-list';
+                const commentInput = document.createElement('input');
+                commentInput.type = 'text';
+                commentInput.placeholder = 'Write a comment...';
+                const commentBtn = document.createElement('button');
+                commentBtn.textContent = 'Post';
+                commentBtn.onclick = () => {
+                    const userId = localStorage.getItem('user_id');
+                    const comment = commentInput.value;
+                    if (!comment) return;
+                    fetch('submit_comment.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            post_id: post.id,
+                            user_id: userId,
+                            comment: comment
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            loadComments(post.id, commentList);
+                            commentInput.value = '';
+                        }
+                    });
+                };
+
+                commentSection.appendChild(commentList);
+                commentSection.appendChild(commentInput);
+                commentSection.appendChild(commentBtn);
+
+                postDiv.appendChild(userInfo);
+                postDiv.appendChild(content);
+                postDiv.appendChild(commentSection);
+                container.appendChild(postDiv);
+
+                // Load existing comments
+                loadComments(post.id, commentList);
+            });
+        }
+
+        function filterPosts() {
+            const keyword = document.getElementById('search-input').value.toLowerCase();
+            const filtered = allPosts.filter(post => post.content.toLowerCase().includes(keyword));
+            displayPosts(filtered);
+        }
+
+        function loadComments(postId, container) {
+            fetch(`get_comments.php?post_id=${postId}`)
+                .then(res => res.json())
+                .then(comments => {
+                    container.innerHTML = '';
+                    comments.forEach(c => {
+                        const comment = document.createElement('p');
+                        comment.innerHTML = `<strong>@${c.username}</strong>: ${c.comment}`;
+                        container.appendChild(comment);
+                    });
+                });
+        }
+
+        window.onload = loadPosts;
+    </script>
+    <script src="theme.js"></script>
+</body>
 </html>
