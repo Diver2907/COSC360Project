@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="Style.css"/>
-        <title>Home</title>
+        <title>Friends</title>
     </head>
     <body>
         <div class="top-bar">
             <h1>BlogSphere</h1>
-            
         </div>
         <div class="right-nav">
             <ul>
@@ -17,35 +18,70 @@
                 <li><a href="post.html">Post</a></li>
                 <li><a href="settings.html">Settings</a></li>
                 <li><a href="ts-cs.html">Terms and Conditions</a></li>
-                <li><a href="index.html">Logout</a></li>
+                <li><a href="index.html" onclick="logout()">Logout</a></li>
             </ul>
         </div>
         <div class="main-content">
             <h2>Friends</h2>
-            <div class="friends">
-                <div class="friend-container">
-                    <img src="person1.jpg" alt="Profile Photo" width="250px">
-                    <div class="name">John Doe</div>
-                    <div class="username">@johndoe</div>
-                </div>
-                <div class="friend-container">
-                    <img src="person2.jpg" alt="Profile Photo" width="250px">
-                    <div class="name">Anita Lao</div>
-                    <div class="username">@ALow</div>
-                </div>
-                <div class="friend-container">
-                    <img src="person3.jpg" alt="Profile Photo" width="250px">
-                    <div class="name">Jannet Jackie</div>
-                    <div class="username">@jjackie</div>
-                </div>
-                <div class="friend-container">
-                    <img src="person4.jpg" alt="Profile Photo" width="250px">
-                    <div class="name">John Dallas</div>
-                    <div class="username">@DallasJohn</div>
-                </div>
+            <div class="friends" id="friends-list">
+                <!-- Friends will be loaded here -->
             </div>
         </div>
-<script src="theme.js"></script>
 
+        <script>
+            if (!localStorage.getItem('user_id')) {
+                window.location.href = 'index.html';
+            }
+
+            function logout() {
+                localStorage.clear();
+            }
+
+            function loadFriends() {
+                const userId = localStorage.getItem('user_id');
+
+                fetch(`get_friends.php?user_id=${userId}`)
+                    .then(res => res.json())
+                    .then(friends => {
+                        const container = document.getElementById('friends-list');
+                        container.innerHTML = '';
+
+                        if (friends.length === 0) {
+                            container.innerHTML = '<p>You have no friends added yet.</p>';
+                            return;
+                        }
+
+                        friends.forEach(friend => {
+                            const friendDiv = document.createElement('div');
+                            friendDiv.className = 'friend-container';
+
+                            const img = document.createElement('img');
+                            img.src = friend.image || 'default-profile.png';
+                            img.alt = 'Profile Photo';
+                            img.width = 250;
+
+                            const nameDiv = document.createElement('div');
+                            nameDiv.className = 'name';
+                            nameDiv.textContent = friend.username;
+
+                            const usernameDiv = document.createElement('div');
+                            usernameDiv.className = 'username';
+                            usernameDiv.textContent = `@${friend.username}`;
+
+                            friendDiv.appendChild(img);
+                            friendDiv.appendChild(nameDiv);
+                            friendDiv.appendChild(usernameDiv);
+
+                            container.appendChild(friendDiv);
+                        });
+                    })
+                    .catch(err => {
+                        console.error('Error loading friends:', err);
+                    });
+            }
+
+            window.onload = loadFriends;
+        </script>
+        <script src="theme.js"></script>
     </body>
 </html>

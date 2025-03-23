@@ -5,11 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Author Profile</title>
     <link rel="stylesheet" href="Style.css">
+    <style>
+        #edit-form {
+            display: none;
+            margin-top: 20px;
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        #edit-form input, #edit-form textarea {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 8px;
+        }
+        #edit-form button {
+            background-color: #800080;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <div class="top-bar">
         <h1>BlogSphere</h1>
-        
     </div>
     <div class="right-nav">
         <ul>
@@ -19,59 +41,123 @@
             <li><a href="post.html">Post</a></li>
             <li><a href="settings.html">Settings</a></li>
             <li><a href="ts-cs.html">Terms and Conditions</a></li>
-            <li><a href="index.html">Logout</a></li>
+            <li><a href="index.html" onclick="logout()">Logout</a></li>
         </ul>
     </div>
     <div class="main-content">
         <h2>Profile</h2>
         <div class="profile">
             <img id="profile-pic" src="" alt="Profile Picture" class="profile-pic">
-        <h2 id="author-name">Author Name</h2>
-        <p class="bio" id="author-bio">This is the author's bio.</p>
-        <p class="friend-count" onclick="redirectToFriends()">Friends: <span id="friend-count">4</span></p>
+            <h2 id="author-name">Author Name</h2>
+            <p class="bio" id="author-bio">This is the author's bio.</p>
+            <p class="friend-count" onclick="redirectToFriends()">Friends: <span id="friend-count">0</span></p>
+            <button onclick="toggleEditForm()">Edit Profile</button>
+
+            <form id="edit-form" enctype="multipart/form-data">
+                <input type="text" id="edit-username" placeholder="New Username">
+                <textarea id="edit-bio" placeholder="New Bio"></textarea>
+                <input type="file" id="edit-image" accept="image/*">
+                <button type="button" onclick="updateProfile()">Save Changes</button>
+            </form>
         </div>
-        
+
         <div class="posts" id="posts-container">
-            <h3>Posts</h3>
-            <div class="post">
-                <img id="post-pic" src="samplePost1.png" alt="Post Image" class="post-pic" height="300">
-                <div class="post-content">
-                    <p>Very lucky to take part in this event!</p>
-                </div>
-            </div>
-            <div class="post">
-                <img id="post-pic" src="samplePost2.JPG" alt="Post Image" class="post-pic" height="300">
-                <div class="post-content">
-                    <p>Heavier than air planes!</p>
-                </div>
-            </div>
+            <h3>Your Posts</h3>
         </div>
     </div>
     <script>
+        if (!localStorage.getItem('user_id')) {
+            window.location.href = 'index.html';
+        }
+
+        function logout() {
+            localStorage.clear();
+        }
+
         function redirectToFriends() {
             window.location.href = "friends.html";
         }
 
-        // Load user data from localStorage
-        function loadProfile() {
-            let currentUser = JSON.parse(localStorage.getItem('currentUser'));
-            if (currentUser) {
-                document.getElementById('author-name').innerText = currentUser.name;
-                document.getElementById('author-bio').innerText = currentUser.bio;
-                if (currentUser.profileImage) {
-                    document.getElementById('profile-pic').src = currentUser.profileImage;
-                } else {
-                    document.getElementById('profile-pic').src = "default-profile.png";
-                }
-            } else {
-                alert("No user data found. Please log in.");
-                window.location.href = "index.html";
-            }
+        function toggleEditForm() {
+            const form = document.getElementById('edit-form');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
         }
-        
-        window.onload = loadProfile;
-    </script>
-<script src="theme.js"></script>
 
+        function loadProfile() {
+            const userId = localStorage.getItem('user_id');
+            fetch(`get_user.php?user_id=${userId}`)
+                .then(res => res.json())
+                .then(user => {
+                    document.getElementById('author-name').innerText = user.username;
+                    document.getElementById('author-bio').innerText = user.bio || 'This user has not added a bio yet.';
+                    document.getElementById('profile-pic').src = user.image || 'default-profile.png';
+                    document.getElementById('edit-username').value = user.username;
+                    document.getElementById('edit-bio').value = user.bio;
+                });
+
+            fetch(`friend_count.php?user_id=${userId}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('friend-count').innerText = data.count;
+                });
+        }
+
+        function updateProfile() {
+            const formData = new FormData();
+            formData.append('user_id', localStorage.getItem('user_id'));
+            formData.append('username', document.getElementById('edit-username').value);
+            formData.append('bio', document.getElementById('edit-bio').value);
+            const image = document.getElementById('edit-image').files[0];
+            if (image) formData.append('image', image);
+
+            fetch('update_profile.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Profile updated successfully!');
+                    loadProfile();
+                    document.getElementById('edit-form').style.display = 'none';
+                } else {
+                    alert('Failed to update profile.');
+                }
+            });
+        }
+
+        function loadUserPosts() {
+            const userId = localStorage.getItem('user_id');
+            fetch('get_posts.php')
+                .then(res => res.json())
+                .then(posts => {
+                    const userPosts = posts.filter(p => p.user_id == userId);
+                    const container = document.getElementById('posts-container');
+                    userPosts.forEach(post => {
+                        const postDiv = document.createElement('div');
+                        postDiv.className = 'post';
+
+                        if (post.image_url) {
+                            const img = document.createElement('img');
+                            img.src = post.image_url;
+                            img.alt = 'Post Image';
+                            postDiv.appendChild(img);
+                        }
+
+                        const content = document.createElement('p');
+                        content.textContent = post.content;
+                        postDiv.appendChild(content);
+
+                        container.appendChild(postDiv);
+                    });
+                });
+        }
+
+        window.onload = function () {
+            loadProfile();
+            loadUserPosts();
+        }
+    </script>
+    <script src="theme.js"></script>
 </body>
 </html>

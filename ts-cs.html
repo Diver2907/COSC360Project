@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="Style.css"/>
-        <title>Home</title>
+        <title>Terms and Conditions</title>
     </head>
     <body>
         <div class="top-bar">
             <h1>BlogSphere</h1>
-            
         </div>
         <div class="right-nav">
             <ul>
@@ -17,18 +18,30 @@
                 <li><a href="post.html">Post</a></li>
                 <li><a href="settings.html">Settings</a></li>
                 <li class="active"><a href="ts-cs.html">Terms and Conditions</a></li>
-                <li><a href="index.html">Logout</a></li>
+                <li><a href="index.html" onclick="logout()">Logout</a></li>
             </ul>
         </div>
         <div class="main-content">
             <h2>Terms and Conditions</h2>
             <p>
-                Terms and Conditions Apply.
+                Welcome to BlogSphere! This website is a school project and is not intended for commercial use.<br><br>
+                By using this website, you agree to the following terms:
+                <ul>
+                    <li>You may browse and post content as a registered user.</li>
+                    <li>All data is stored for academic demonstration purposes only.</li>
+                    <li>Any inappropriate or offensive content will be removed by administrators.</li>
+                    <li>You agree to respect other users and engage respectfully.</li>
+                    <li>Administrators may enable/disable users or content as needed.</li>
+                </ul>
                 <br>
-                Those terms and conditions being that this is a damn school project
+                If you have any questions, feel free to contact your course instructor.
             </p>
         </div>
-<script src="theme.js"></script>
-
+        <script>
+            function logout() {
+                localStorage.clear();
+            }
+        </script>
+        <script src="theme.js"></script>
     </body>
 </html>

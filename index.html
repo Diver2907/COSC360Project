@@ -86,60 +86,86 @@
         }
 
         function login() {
-            let username = document.getElementById('login-username').value;
-            let password = document.getElementById('login-password').value;
-            let storedData = JSON.parse(localStorage.getItem('userData'));
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
 
-            if (storedData && storedData.username === username && storedData.password === password) {
-                localStorage.setItem('currentUser', JSON.stringify(storedData));
-                alert(`Logging in as ${username}`);
-                window.location.href = "profile.html";
-            } else {
-                alert('Invalid username or password');
-            }
+            fetch('login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('user_id', data.user_id);
+                    window.location.href = 'home.html';
+                } else {
+                    alert('Invalid username or password');
+                }
+            });
         }
 
         function signup() {
-            let name = document.getElementById('signup-name').value;
-            let username = document.getElementById('signup-username').value;
-            let password = document.getElementById('signup-password').value;
-            let bio = document.getElementById('signup-bio').value;
-            let profilePic = document.getElementById('signup-profile-pic').files[0];
-            
-            if (name && username && password) {
-                let reader = new FileReader();
-                reader.onload = function (event) {
-                    let profileImage = event.target.result;
-                    let userData = {
-                        name: name,
-                        username: username,
-                        password: password,
-                        bio: bio,
-                        profileImage: profileImage
-                    };
-                    localStorage.setItem('userData', JSON.stringify(userData));
-                    localStorage.setItem('currentUser', JSON.stringify(userData));
-                    alert(`Signing up as ${username}`);
-                    window.location.href = "profile.html";
-                };
-                if (profilePic) {
-                    reader.readAsDataURL(profilePic);
-                } else {
-                    let userData = {
-                        name: name,
-                        username: username,
-                        password: password,
-                        bio: bio,
-                        profileImage: ""
-                    };
-                    localStorage.setItem('userData', JSON.stringify(userData));
-                    localStorage.setItem('currentUser', JSON.stringify(userData));
-                    alert(`Signing up as ${username}`);
-                    window.location.href = "profile.html";
-                }
-            } else {
+            const name = document.getElementById('signup-name').value;
+            const username = document.getElementById('signup-username').value;
+            const password = document.getElementById('signup-password').value;
+            const bio = document.getElementById('signup-bio').value;
+            const profilePic = document.getElementById('signup-profile-pic').files[0];
+
+            if (!name || !username || !password) {
                 alert('Please fill in all required fields');
+                return;
             }
+
+            if (profilePic) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const image = event.target.result;
+                    sendSignupData(name, username, password, bio, image);
+                };
+                reader.readAsDataURL(profilePic);
+            } else {
+                sendSignupData(name, username, password, bio, '');
+            }
+        }
+
+        function sendSignupData(name, username, password, bio, image) {
+            fetch('register.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: username,
+                    email: '',
+                    password: password,
+                    bio: bio,
+                    image: image
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Signed up as ${username}`);
+                    // After signup, redirect to login or auto-login
+                    loginAfterSignup(username, password);
+                } else {
+                    alert('Signup failed');
+                }
+            });
+        }
+
+        function loginAfterSignup(username, password) {
+            fetch('login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('user_id', data.user_id);
+                    window.location.href = 'home.html';
+                }
+            });
         }
     </script>
 </body>
