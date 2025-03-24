@@ -1,14 +1,12 @@
 <?php
-include 'db.php';
+// friend_count.php
+require 'db.php';
 
 $user_id = $_GET['user_id'];
 
-$stmt = $conn->prepare("SELECT COUNT(*) AS count FROM friends WHERE user_id = ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result()->fetch_assoc();
+$stmt = $pdo->prepare("SELECT COUNT(*) AS count FROM friends WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$data = $stmt->fetch();
 
-echo json_encode(["count" => $result['count']]);
-$stmt->close();
-$conn->close();
+echo json_encode(['count' => $data['count']]);
 ?>
