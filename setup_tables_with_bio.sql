@@ -6,6 +6,7 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     image TEXT,
     bio TEXT,
+    is_admin BOOLEAN DEFAULT 0,
     disabled BOOLEAN DEFAULT 0
 );
 
@@ -15,6 +16,7 @@ CREATE TABLE posts (
     user_id INT NOT NULL,
     content TEXT NOT NULL,
     image_url TEXT,
+    category VARCHAR(100) DEFAULT 'General',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     disabled BOOLEAN DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users(id)

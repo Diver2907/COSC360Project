@@ -18,7 +18,7 @@
             margin-top: 10px;
             display: block;
         }
-        #post-form textarea, #post-form input {
+        #post-form textarea, #post-form input, #post-form select {
             width: 100%;
             padding: 8px;
             margin-top: 5px;
@@ -38,7 +38,6 @@
         #post-form button:hover {
             background: #5a005a;
         }
-
         #post-container {
             margin-top: 20px;
             display: flex;
@@ -88,6 +87,16 @@
             <label for="post-image">Upload an Image:</label>
             <input type="file" id="post-image" accept="image/*">
 
+            <label for="post-category">Category:</label>
+            <select id="post-category">
+                <option value="General">General</option>
+                <option value="Travel">Travel</option>
+                <option value="Tech">Tech</option>
+                <option value="Lifestyle">Lifestyle</option>
+                <option value="Food">Food</option>
+                <option value="Other">Other</option>
+            </select>
+
             <button type="submit">Submit Post</button>
         </form>
 
@@ -107,6 +116,7 @@
             e.preventDefault();
 
             const text = document.getElementById('post-text').value;
+            const category = document.getElementById('post-category').value;
             const file = document.getElementById('post-image').files[0];
             const postContainer = document.getElementById('post-container');
             const userId = localStorage.getItem('user_id');
@@ -119,6 +129,7 @@
                     body: JSON.stringify({
                         user_id: userId,
                         content: text,
+                        category: category,
                         image_url: imageData || ''
                     })
                 })
