@@ -1,21 +1,23 @@
 <?php
-include 'db.php';
-$data = json_decode(file_get_contents('php://input'), true);
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-$username = $data['username'];
-$password = $data['password'];
+// login.php
+require 'db.php';
 
-$stmt = $conn->prepare("SELECT id, password, is_admin FROM users WHERE username = ?");
-$stmt->bind_param("s", $username);
-$stmt->execute();
-$result = $stmt->get_result()->fetch_assoc();
+// Get the JSON input from the request body
+$data = json_decode(file_get_contents("php://input"));
 
-if ($result && password_verify($password, $result['password'])) {
-    echo json_encode([
-        "success" => true,
-        "user_id" => $result['id'],
-        "is_admin" => $result['is_admin']
-    ]);
+$username = $data->username;
+$password = $data->password;
+
+// Query to fetch user data
+$stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+$stmt->execute([$username]);
+$user = $stmt->fetch();
+
+if ($user && password_verify($password, $user['password'])) {
+    echo json_encode(["success" => true, "user_id" => $user['id']]);
 } else {
     echo json_encode(["success" => false]);
 }
