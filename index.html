@@ -85,25 +85,31 @@
             document.getElementById(formType + '-form').style.display = 'block';
         }
 
-        function login() {
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
+      function login() {
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
 
-            fetch('login.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    localStorage.setItem('user_id', data.user_id);
-                    window.location.href = 'home.html';
-                } else {
-                    alert('Invalid username or password');
-                }
-            });
+    fetch('login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            localStorage.setItem('user_id', data.user_id);
+            localStorage.setItem('is_admin', data.is_admin);
+
+            if (data.is_admin == 1) {
+                window.location.href = 'admin_home.html';
+            } else {
+                window.location.href = 'home.html';
+            }
+        } else {
+            alert('Invalid username or password');
         }
+    });
+}
 
         function signup() {
             const name = document.getElementById('signup-name').value;
@@ -153,20 +159,26 @@
             });
         }
 
-        function loginAfterSignup(username, password) {
-            fetch('login.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    localStorage.setItem('user_id', data.user_id);
-                    window.location.href = 'home.html';
-                }
-            });
+       function loginAfterSignup(username, password) {
+    fetch('login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            localStorage.setItem('user_id', data.user_id);
+            localStorage.setItem('is_admin', data.is_admin);
+
+            if (data.is_admin == 1) {
+                window.location.href = 'admin_home.html';
+            } else {
+                window.location.href = 'home.html';
+            }
         }
+    });
+}
     </script>
 </body>
 </html>

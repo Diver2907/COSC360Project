@@ -5,29 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Author Profile</title>
     <link rel="stylesheet" href="Style.css">
-    <style>
-        #edit-form {
-            display: none;
-            margin-top: 20px;
-            background-color: #eee;
-            padding: 10px;
-            border-radius: 10px;
-        }
-        #edit-form input, #edit-form textarea {
-            display: block;
-            width: 100%;
-            margin: 10px 0;
-            padding: 8px;
-        }
-        #edit-form button {
-            background-color: #800080;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
 </head>
 <body>
     <div class="top-bar">
@@ -46,25 +23,24 @@
     </div>
     <div class="main-content">
         <h2>Profile</h2>
+
         <div class="profile">
             <img id="profile-pic" src="" alt="Profile Picture" class="profile-pic">
             <h2 id="author-name">Author Name</h2>
             <p class="bio" id="author-bio">This is the author's bio.</p>
             <p class="friend-count" onclick="redirectToFriends()">Friends: <span id="friend-count">0</span></p>
-            <button onclick="toggleEditForm()">Edit Profile</button>
-
-            <form id="edit-form" enctype="multipart/form-data">
-                <input type="text" id="edit-username" placeholder="New Username">
-                <textarea id="edit-bio" placeholder="New Bio"></textarea>
-                <input type="file" id="edit-image" accept="image/*">
-                <button type="button" onclick="updateProfile()">Save Changes</button>
-            </form>
         </div>
 
         <div class="posts" id="posts-container">
             <h3>Your Posts</h3>
         </div>
+
+        <div class="comments" id="comments-container">
+            <h3>Your Comments</h3>
+            <div id="user-comments"></div>
+        </div>
     </div>
+
     <script>
         if (!localStorage.getItem('user_id')) {
             window.location.href = 'index.html';
@@ -78,11 +54,6 @@
             window.location.href = "friends.html";
         }
 
-        function toggleEditForm() {
-            const form = document.getElementById('edit-form');
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        }
-
         function loadProfile() {
             const userId = localStorage.getItem('user_id');
             fetch(`get_user.php?user_id=${userId}`)
@@ -91,8 +62,6 @@
                     document.getElementById('author-name').innerText = user.username;
                     document.getElementById('author-bio').innerText = user.bio || 'This user has not added a bio yet.';
                     document.getElementById('profile-pic').src = user.image || 'default-profile.png';
-                    document.getElementById('edit-username').value = user.username;
-                    document.getElementById('edit-bio').value = user.bio;
                 });
 
             fetch(`friend_count.php?user_id=${userId}`)
@@ -102,30 +71,6 @@
                 });
         }
 
-        function updateProfile() {
-            const formData = new FormData();
-            formData.append('user_id', localStorage.getItem('user_id'));
-            formData.append('username', document.getElementById('edit-username').value);
-            formData.append('bio', document.getElementById('edit-bio').value);
-            const image = document.getElementById('edit-image').files[0];
-            if (image) formData.append('image', image);
-
-            fetch('update_profile.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Profile updated successfully!');
-                    loadProfile();
-                    document.getElementById('edit-form').style.display = 'none';
-                } else {
-                    alert('Failed to update profile.');
-                }
-            });
-        }
-
         function loadUserPosts() {
             const userId = localStorage.getItem('user_id');
             fetch('get_posts.php')
@@ -133,6 +78,7 @@
                 .then(posts => {
                     const userPosts = posts.filter(p => p.user_id == userId);
                     const container = document.getElementById('posts-container');
+                    container.innerHTML = '';
                     userPosts.forEach(post => {
                         const postDiv = document.createElement('div');
                         postDiv.className = 'post';
@@ -153,9 +99,29 @@
                 });
         }
 
+        function loadUserComments() {
+            const userId = localStorage.getItem('user_id');
+            fetch(`get_comments.php?user_id=${userId}`)
+                .then(res => res.json())
+                .then(comments => {
+                    const container = document.getElementById('user-comments');
+                    container.innerHTML = '';
+                    if (comments.length === 0) {
+                        container.innerHTML = '<p>You haven’t commented on anything yet.</p>';
+                        return;
+                    }
+                    comments.forEach(c => {
+                        const comment = document.createElement('p');
+                        comment.innerHTML = `<strong>On Post #${c.post_id}</strong>: ${c.comment}`;
+                        container.appendChild(comment);
+                    });
+                });
+        }
+
         window.onload = function () {
             loadProfile();
             loadUserPosts();
+            loadUserComments();
         }
     </script>
     <script src="theme.js"></script>

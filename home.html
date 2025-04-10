@@ -4,6 +4,31 @@
     <meta charset="UTF-8">
     <title>Home</title>
     <link rel="stylesheet" href="Style.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        #admin-search, #hot-posts, #postChart {
+            display: none;
+            margin-bottom: 20px;
+        }
+        #admin-search input {
+            width: 300px;
+            padding: 8px;
+            margin-right: 10px;
+        }
+        .search-results {
+            background-color: #eee;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .comment-toggle {
+            color: blue;
+            cursor: pointer;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
     <div class="top-bar">
@@ -20,110 +45,120 @@
             <li><a href="index.html" onclick="logout()">Logout</a></li>
         </ul>
     </div>
+
     <div class="main-content">
         <h1>Posts Feed</h1>
-        <input type="text" id="search-input" placeholder="Search posts..." oninput="filterPosts()" style="width: 100%; padding: 10px; margin: 20px 0;">
-        <div class="posts" id="posts-container">
-            <!-- Dynamic posts will be loaded here -->
+
+<div id="admin-chart-container" style="display:none; margin-top: 30px;">
+    <h3>Post Activity (Last 7 Days)</h3>
+    <canvas id="activityChart" height="100"></canvas>
+</div>
+
+
+        <!-- Admin-only tools -->
+        <div id="admin-search">
+            <input type="text" id="search-query" placeholder="Search users or posts...">
+            <button onclick="searchAdminContent()">Search</button>
+            <div id="search-results" class="search-results"></div>
         </div>
+
+        <canvas id="postChart"></canvas>
+
+        <div id="hot-posts">
+            <h3>🔥 Hot Posts</h3>
+            <div id="hot-posts-container"></div>
+        </div>
+
+        <div class="posts" id="posts-container"></div>
     </div>
+
     <script>
-        if (!localStorage.getItem('user_id')) {
-            window.location.href = 'index.html';
-        }
-
-        function logout() {
-            localStorage.clear();
-        }
-
-        let allPosts = [];
+        if (!localStorage.getItem('user_id')) window.location.href = 'index.html';
+        function logout() { localStorage.clear(); }
 
         function loadPosts() {
             fetch('get_posts.php')
                 .then(res => res.json())
                 .then(posts => {
-                    allPosts = posts;
-                    displayPosts(posts);
-                })
-                .catch(err => {
-                    console.error('Error loading posts:', err);
-                });
-        }
+                    const container = document.getElementById('posts-container');
+                    container.innerHTML = '';
 
-        function displayPosts(posts) {
-            const container = document.getElementById('posts-container');
-            container.innerHTML = '';
-            if (posts.length === 0) {
-                container.innerHTML = '<p>No posts available.</p>';
-                return;
-            }
-
-            posts.forEach(post => {
-                const postDiv = document.createElement('div');
-                postDiv.className = 'post';
-
-                if (post.image_url) {
-                    const img = document.createElement('img');
-                    img.src = post.image_url;
-                    img.alt = 'Post Image';
-                    postDiv.appendChild(img);
-                }
-
-                const userInfo = document.createElement('p');
-                userInfo.innerHTML = `<strong>@${post.username}</strong>`;
-                const content = document.createElement('p');
-                content.textContent = post.content;
-
-                // Comments section
-                const commentSection = document.createElement('div');
-                commentSection.className = 'comments';
-                const commentList = document.createElement('div');
-                commentList.className = 'comment-list';
-                const commentInput = document.createElement('input');
-                commentInput.type = 'text';
-                commentInput.placeholder = 'Write a comment...';
-                const commentBtn = document.createElement('button');
-                commentBtn.textContent = 'Post';
-                commentBtn.onclick = () => {
-                    const userId = localStorage.getItem('user_id');
-                    const comment = commentInput.value;
-                    if (!comment) return;
-                    fetch('submit_comment.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            post_id: post.id,
-                            user_id: userId,
-                            comment: comment
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            loadComments(post.id, commentList);
-                            commentInput.value = '';
-                        }
+                    const groups = {};
+                    posts.forEach(post => {
+                        if (!groups[post.category]) groups[post.category] = [];
+                        groups[post.category].push(post);
                     });
-                };
 
-                commentSection.appendChild(commentList);
-                commentSection.appendChild(commentInput);
-                commentSection.appendChild(commentBtn);
+                    Object.keys(groups).forEach(category => {
+                        const catHeader = document.createElement('h3');
+                        catHeader.textContent = category;
+                        container.appendChild(catHeader);
 
-                postDiv.appendChild(userInfo);
-                postDiv.appendChild(content);
-                postDiv.appendChild(commentSection);
-                container.appendChild(postDiv);
+                        groups[category].forEach(post => {
+                            const postDiv = document.createElement('div');
+                            postDiv.className = 'post';
 
-                // Load existing comments
-                loadComments(post.id, commentList);
-            });
-        }
+                            if (post.image_url) {
+                                const img = document.createElement('img');
+                                img.src = post.image_url;
+                                img.alt = 'Post Image';
+                                postDiv.appendChild(img);
+                            }
 
-        function filterPosts() {
-            const keyword = document.getElementById('search-input').value.toLowerCase();
-            const filtered = allPosts.filter(post => post.content.toLowerCase().includes(keyword));
-            displayPosts(filtered);
+                            const userInfo = document.createElement('p');
+                            userInfo.innerHTML = `<strong>@${post.username}</strong>`;
+                            const content = document.createElement('p');
+                            content.textContent = post.content;
+
+                            const toggle = document.createElement('div');
+                            toggle.className = 'comment-toggle';
+                            toggle.textContent = '💬 View Comments';
+                            const commentSection = document.createElement('div');
+                            commentSection.className = 'comments hidden';
+                            const commentList = document.createElement('div');
+                            commentList.className = 'comment-list';
+                            const commentInput = document.createElement('input');
+                            commentInput.type = 'text';
+                            commentInput.placeholder = 'Write a comment...';
+                            const commentBtn = document.createElement('button');
+                            commentBtn.textContent = 'Post';
+                            commentBtn.onclick = () => {
+                                const comment = commentInput.value;
+                                if (!comment) return;
+                                fetch('submit_comment.php', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        post_id: post.id,
+                                        user_id: localStorage.getItem('user_id'),
+                                        comment
+                                    })
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        loadComments(post.id, commentList);
+                                        commentInput.value = '';
+                                    }
+                                });
+                            };
+                            toggle.onclick = () => {
+                                commentSection.classList.toggle('hidden');
+                                loadComments(post.id, commentList);
+                            };
+
+                            commentSection.appendChild(commentList);
+                            commentSection.appendChild(commentInput);
+                            commentSection.appendChild(commentBtn);
+
+                            postDiv.appendChild(userInfo);
+                            postDiv.appendChild(content);
+                            postDiv.appendChild(toggle);
+                            postDiv.appendChild(commentSection);
+                            container.appendChild(postDiv);
+                        });
+                    });
+                });
         }
 
         function loadComments(postId, container) {
@@ -139,7 +174,114 @@
                 });
         }
 
-        window.onload = loadPosts;
+        function searchAdminContent() {
+            const query = document.getElementById('search-query').value;
+            fetch(`admin_search.php?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('search-results');
+                    container.innerHTML = '';
+
+                    if (data.users.length > 0) {
+                        container.innerHTML += '<h4>Matching Users:</h4>';
+                        data.users.forEach(user => {
+                            container.innerHTML += `<p><strong>@${user.username}</strong> - ${user.email}</p>`;
+                        });
+                    }
+
+                    if (data.posts.length > 0) {
+                        container.innerHTML += '<h4>Matching Posts:</h4>';
+                        data.posts.forEach(post => {
+                            container.innerHTML += `<p><strong>@${post.username}</strong>: ${post.content}</p>`;
+                        });
+                    }
+
+                    if (data.users.length === 0 && data.posts.length === 0) {
+                        container.innerHTML = '<p>No matches found.</p>';
+                    }
+                });
+        }
+
+        function loadHotPosts() {
+            fetch('get_hot_posts.php')
+                .then(res => res.json())
+                .then(posts => {
+                    const container = document.getElementById('hot-posts-container');
+                    container.innerHTML = '';
+                    posts.forEach(post => {
+                        const el = document.createElement('p');
+                        el.innerHTML = `<strong>@${post.username}</strong>: ${post.content} (${post.comment_count} comments)`;
+                        container.appendChild(el);
+                    });
+                    document.getElementById('hot-posts').style.display = 'block';
+                });
+        }
+
+        function loadPostChart() {
+            fetch('get_post_stats.php')
+                .then(res => res.json())
+                .then(data => {
+                    const ctx = document.getElementById('postChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Posts by Category',
+                                data: data.counts,
+                                backgroundColor: '#800080'
+                            }]
+                        }
+                    });
+                    document.getElementById('postChart').style.display = 'block';
+                });
+        }
+
+       window.onload = function () {
+    loadPosts();
+    loadHotPosts();
+
+    const isAdmin = localStorage.getItem('is_admin');
+    if (isAdmin === '1') {
+        document.getElementById('admin-search').style.display = 'block';
+        document.getElementById('admin-chart-container').style.display = 'block';
+        loadPostChart();  // renamed to match your earlier call
+    }
+};
+
+
+function loadActivityChart() {
+    fetch('get_activity_data.php')
+        .then(res => res.json())
+        .then(data => {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            const labels = data.map(d => d.day).reverse();
+            const values = data.map(d => d.count).reverse();
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Posts per Day',
+                        data: values,
+                        backgroundColor: 'rgba(128, 0, 128, 0.6)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        });
+}
+
     </script>
     <script src="theme.js"></script>
 </body>
