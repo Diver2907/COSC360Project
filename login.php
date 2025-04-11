@@ -1,24 +1,43 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+header('Content-Type: application/json');
 
-// login.php
-require 'db.php';
+try {
+    $data = json_decode(file_get_contents("php://input"), true);
 
-// Get the JSON input from the request body
-$data = json_decode(file_get_contents("php://input"));
+    if (!isset($data['username']) || !isset($data['password'])) {
+        echo json_encode(["success" => false, "message" => "Missing username or password"]);
+        exit;
+    }
 
-$username = $data->username;
-$password = $data->password;
+    $username = $data['username'];
+    $password = $data['password'];
 
-// Query to fetch user data
-$stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
-$stmt->execute([$username]);
-$user = $stmt->fetch();
 
-if ($user && password_verify($password, $user['password'])) {
-    echo json_encode(["success" => true, "user_id" => $user['id']]);
-} else {
-    echo json_encode(["success" => false]);
+    require 'db.php';
+
+    $stmt = $conn->prepare("SELECT id, password, is_admin FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($user = $result->fetch_assoc()) {
+        if (password_verify($password, $user['password'])) {
+            echo json_encode([
+                "success" => true,
+                "user_id" => $user['id'],
+                "is_admin" => $user['is_admin']
+            ]);
+        } else {
+            echo json_encode(["success" => false, "message" => "Incorrect password"]);
+        }
+    } else {
+        echo json_encode(["success" => false, "message" => "User not found"]);
+    }
+
+    $stmt->close();
+    $conn->close();
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode(["success" => false, "message" => "Server error: " . $e->getMessage()]);
 }
 ?>

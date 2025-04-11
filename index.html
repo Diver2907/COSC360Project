@@ -49,6 +49,16 @@
         .hidden {
             display: none;
         }
+
+        .admin-checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px; /* controls space between text and checkbox */
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
     </style>
 </head>
 <body>
@@ -69,10 +79,15 @@
             <h2>Sign Up</h2>
             <input type="text" id="signup-name" placeholder="Full Name" required>
             <input type="text" id="signup-username" placeholder="Username" required>
+            <input type="email" id="signup-email" placeholder="Email" required>
             <input type="password" id="signup-password" placeholder="Password" required>
             <textarea id="signup-bio" placeholder="Bio"></textarea>
             <label for="signup-profile-pic">Upload Profile Image:</label>
             <input type="file" id="signup-profile-pic" accept="image/*">
+            <div class="admin-checkbox">
+                <span>Admin:</span>
+                <input type="checkbox" id="signup-admin">
+            </div>
             <button onclick="signup()">Submit</button>
         </div>
     </div>
@@ -94,19 +109,28 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            localStorage.setItem('user_id', data.user_id);
-            localStorage.setItem('is_admin', data.is_admin);
+    .then(res => res.text())
+    .then(text => {
+        try {
+            const data = JSON.parse(text);
 
-            if (data.is_admin == 1) {
-                window.location.href = 'admin_home.html';
+            console.log("Login response:", data);
+
+            if (data.success) {
+                localStorage.setItem('user_id', data.user_id);
+                localStorage.setItem('is_admin', data.is_admin);
+
+                if (data.is_admin == 1) {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'home.html';
+                }
             } else {
-                window.location.href = 'home.html';
+                alert(data.message || "Invalid username or password");
             }
-        } else {
-            alert('Invalid username or password');
+        } catch (err) {
+            console.error("Login JSON parse error:", text);
+            alert("Server error. Please try again later.");
         }
     });
 }
@@ -114,9 +138,11 @@
         function signup() {
             const name = document.getElementById('signup-name').value;
             const username = document.getElementById('signup-username').value;
+            const email = document.getElementById('signup-email').value.trim();
             const password = document.getElementById('signup-password').value;
             const bio = document.getElementById('signup-bio').value;
             const profilePic = document.getElementById('signup-profile-pic').files[0];
+            const isAdmin = document.getElementById('signup-admin').checked ? 1 : 0;
 
             if (!name || !username || !password) {
                 alert('Please fill in all required fields');
@@ -127,27 +153,45 @@
                 const reader = new FileReader();
                 reader.onload = function (event) {
                     const image = event.target.result;
-                    sendSignupData(name, username, password, bio, image);
+                    sendSignupData(name, username, email, password, bio, image, isAdmin);
                 };
                 reader.readAsDataURL(profilePic);
             } else {
-                sendSignupData(name, username, password, bio, '');
+                sendSignupData(name, username, email, password, bio, '', isAdmin);
             }
         }
 
-        function sendSignupData(name, username, password, bio, image) {
+        function sendSignupData(name, username, email, password, bio, image, isAdmin) {
+            
             fetch('register.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     username: username,
-                    email: '',
+                    name: name,
+                    email: email,
                     password: password,
                     bio: bio,
-                    image: image
+                    image: image,
+                    is_admin: isAdmin
                 })
             })
-            .then(res => res.json())
+            .then(res => res.text())
+            .then(text => {
+                try {
+                    const data = JSON.parse(text);
+                    if (data.success) {
+                        alert(`Signed up as ${username}`);
+                        loginAfterSignup(username, password);
+                    } else {
+                        alert(data.message || 'Signup failed');
+                    }
+                } catch (e) {
+                    console.error("Invalid JSON:", text);
+                    alert("Server error. Please try again later.");
+                }
+            })
+
             .then(data => {
                 if (data.success) {
                     alert(`Signed up as ${username}`);
@@ -172,13 +216,14 @@
             localStorage.setItem('is_admin', data.is_admin);
 
             if (data.is_admin == 1) {
-                window.location.href = 'admin_home.html';
+                window.location.href = 'admin.html';
             } else {
                 window.location.href = 'home.html';
             }
         }
     });
 }
+    
     </script>
 </body>
 </html>

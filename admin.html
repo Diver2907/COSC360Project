@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="Style.css" />
+  <style>
+    .admin-controls button {
+      margin-right: 8px;
+    }
+    .search-results {
+      margin-top: 20px;
+    }
+    .search-results h4 {
+      margin-bottom: 5px;
+    }
+    .admin-actions {
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar"><h1>Admin Dashboard</h1></div>
+
+  <div class="right-nav">
+    <ul>
+      <li><a href="home.html">Home</a></li>
+      <li><a href="profile.html">Profile</a></li>
+      <li><a href="friends.html">Friends</a></li>
+      <li><a href="post.html">Post</a></li>
+      <li><a href="settings.html">Settings</a></li>
+      <li><a href="ts-cs.html">Terms and Conditions</a></li>
+      <li><a href="index.html" onclick="logout()">Logout</a></li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <h2>Search Users & Posts</h2>
+    <input type="text" id="search-query" placeholder="Search users or posts...">
+    <button onclick="searchAdminContent()">Search</button>
+    <div id="search-results" class="search-results"></div>
+  </div>
+
+  <script>
+    if (localStorage.getItem('is_admin') !== '1') {
+      alert("Admins only.");
+      window.location.href = 'home.html';
+    }
+
+    function logout() {
+      localStorage.clear();
+    }
+
+    function searchAdminContent() {
+      const query = document.getElementById('search-query').value;
+      fetch(`admin_search.php?q=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById('search-results');
+          container.innerHTML = '';
+
+          if (data.users.length > 0) {
+            container.innerHTML += '<h4>Users:</h4>';
+            data.users.forEach(user => {
+              container.innerHTML += `
+                <p>
+                  <strong>@${user.username}</strong> - ${user.email}
+                  <span class="admin-actions">
+                    <button onclick="adminAction('disable_user', ${user.id})">Disable</button>
+                    <button onclick="adminAction('enable_user', ${user.id})">Enable</button>
+                  </span>
+                </p>`;
+            });
+          }
+
+          if (data.posts.length > 0) {
+            container.innerHTML += '<h4>Posts:</h4>';
+            data.posts.forEach(post => {
+              container.innerHTML += `
+                <p>
+                  <strong>@${post.username}</strong>: ${post.content}
+                  <span class="admin-actions">
+                    <button onclick="adminAction('disable_post', ${post.id})">Disable</button>
+                    <button onclick="adminAction('delete_post', ${post.id})">Delete</button>
+                  </span>
+                </p>`;
+            });
+          }
+
+          if (data.users.length === 0 && data.posts.length === 0) {
+            container.innerHTML = '<p>No results found.</p>';
+          }
+        });
+    }
+
+    function adminAction(action, id) {
+      fetch(`admin_tools.php?action=${action}&id=${id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert(`${action} successful!`);
+            searchAdminContent(); // Refresh results
+          } else {
+            alert("Action failed.");
+          }
+        });
+    }
+  </script>
+</body>
+</html>

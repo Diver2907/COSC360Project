@@ -3,11 +3,21 @@
 $host = 'localhost';
 $db   = 'cross297';      // Your database name
 $user = 'cross297'; // Replace with your MySQL username
-$pass = 'cross297'; // Replace with your MySQL password
+$pass = 'password'; // Replace with your MySQL password
 $charset = 'utf8mb4';
 
 // Data Source Name (DSN)
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+
+
+$conn = new mysqli($host, $user, $pass, $db);
+
+// Check connection
+if ($conn->connect_error) {
+    echo json_encode(["success" => false, "message" => $conn->connect_error]);
+    exit;
+}
+
 
 // Options for PDO
 $options = [
